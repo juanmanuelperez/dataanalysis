@@ -5,6 +5,8 @@ import pandas as pd
 import constants as c
 import matplotlib.pyplot as plt
 import datetime as dt
+import pprint as pp
+
 
 def fetch_data(city_or_cid, is_city, date, tt):
     con_wh = stuart.db.get_readonly_engine_for_stuart_warehouse()
@@ -14,7 +16,9 @@ def fetch_data(city_or_cid, is_city, date, tt):
         db_qs = qs.qs_city_date.format(e=city_or_cid, date=date)
     else:
         db_qs = qs.qs_cid_date.format(e=city_or_cid, date=date)
+
     data = pd.read_sql(db_qs, con_wh)
+
     return data[data.tt == tt]
 
 def check_is_city(v):
@@ -24,12 +28,12 @@ def check_is_city(v):
     :param v: city or client_id being requested
     :return: boolean whether it's a city
     """
-    if isinstance(v, str):
-        return True
-    elif isinstance(v, int):
+    try:
+        _ = int(v)
         return False
-    else:
-        raise ValueError('Unrecognized value for {}'.format(v))
+    except Exception:
+        return True
+
 
 def main():
     city_or_cid = sys.argv[1]
@@ -42,6 +46,17 @@ def main():
     dates = sys.argv[3:]
     if len(dates) < 2:
         raise ValueError('Need at least 2 dates to compare distributions.')
+    elif len(dates) == 2:
+        start, end = dt.datetime.strptime(dates[0], '%Y-%m-%d'), dt.datetime.strptime(dates[1], '%Y-%m-%d')
+
+        if end < start:
+            raise ValueError('End date strictly before the start date (start: {}, end: {}'.format(start, end))
+
+        days = (end - start).days
+        dates = [start] # init the dates list
+
+        for i in range(days):
+            dates.append(dates[-1] + dt.timedelta(days=1))
 
     for date in dates:
 
@@ -68,6 +83,7 @@ def main():
         bw_method=c.BW_METHOD),
                 bbox_inches='tight',
                 orientation='portrait')
+
 
 if __name__ == '__main__':
     """

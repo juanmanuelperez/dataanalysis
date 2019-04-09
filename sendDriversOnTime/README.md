@@ -29,7 +29,7 @@ It is only possible to run it for:
 
 - one single city or client, e.g. `Barcelona` or `104006`
 - one transport type, e.g. `bike`
-- as many dates as desired, e.g. `2019-03-01 2019-02-22 2019-02-15`
+- as many dates as desired, e.g. `2019-03-01 2019-02-22 2019-02-15`. If only two dates are given, then the system considers it a range and plots the distribution for every date.
 
 The order in which the parameters is very important (city - TT - dates). The plot obtained is:
 

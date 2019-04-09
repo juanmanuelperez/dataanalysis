@@ -41,7 +41,7 @@ left join delivery_times dt on dt.delivery_id = d.delivery_id
 left join client c on c.client_id = j.client_id
 
 where
-j.client_id = '{e}'
+j.client_id = {e}
 and date(j.job_created_at)= '{date}'
 and j.final_status = 'finished'
 and j.pickup_at is not null
