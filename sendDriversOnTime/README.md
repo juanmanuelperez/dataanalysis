@@ -27,7 +27,7 @@ python main_multiple.py Liverpool bike 2019-03-01 2019-02-22 2019-02-15
 
 It is only possible to run it for:
 
-- one single city, e.g. `Barcelona`
+- one single city or client, e.g. `Barcelona` or `104006`
 - one transport type, e.g. `bike`
 - as many dates as desired, e.g. `2019-03-01 2019-02-22 2019-02-15`
 
