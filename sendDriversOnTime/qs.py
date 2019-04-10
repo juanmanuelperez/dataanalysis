@@ -1,4 +1,4 @@
-qs_pu_city_date = """
+qs_pu_date_city = """
 select
 j.job_id as job_id
 ,j.transport_type as tt

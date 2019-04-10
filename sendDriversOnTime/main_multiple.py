@@ -38,8 +38,6 @@ def fetch_data(job_type, city_or_cid, is_city, date, tt):
     data = pd.read_sql(db_qs, con_wh)
     print('Query execution time: {} sec ({})'.format(round(number=time.time() - t0, ndigits=1), date))
 
-    pp.pprint(data)
-
     return data[data.tt == tt]
 
 
@@ -68,16 +66,29 @@ def check_is_city(v):
         return True
 
 
+def check_plot_type(v):
+    """
+    Check the plot type desired (kde / hist)
+
+    :param v: plot type parameter
+    :return: v
+    """
+    if v not in c.PLOT_TYPES:
+        raise ValueError('Wrong plot type ({}) value. Should be in {}'.format(v, c.PLOT_TYPES))
+    return v
+
+
 def main():
     job_type = check_job_type(sys.argv[1]) # do/pu?
     city_or_cid = sys.argv[2]
+    plot_type = check_plot_type(sys.argv[3])
     is_city = check_is_city(city_or_cid)
 
-    tt = sys.argv[3]
+    tt = sys.argv[4]
     if tt not in c.TT:
         raise ValueError('Unrecognised TT value ({})'.format(tt))
 
-    dates = sys.argv[4:]
+    dates = sys.argv[5:]
     if len(dates) < 2:
         raise ValueError('Need at least 2 dates to compare distributions.')
     elif len(dates) == 2:
@@ -101,17 +112,24 @@ def main():
             continue
 
         dates_formatted.append('{} {} jobs'.format(dt.datetime.strftime(date, '%Y-%m-%d'), str(len(data))))
-        data.computed_delta.plot.kde(bw_method=c.BW_METHOD,
-                                     xlim=c.XLIM,
+        if plot_type == c.KDE:
+            data.computed_delta.plot.kde(bw_method=c.BW_METHOD,
+                                         xlim=c.XLIM,
+                                         figsize=c.FIGSIZE,
+                                         xticks=range(c.XLIM[0], c.XLIM[1]+1, 3),
+                                         grid=True)
+
+        elif plot_type == c.HIST:
+            # Move from seconds to minutes
+            computed_delta = data.computed_delta / 60.0
+            computed_delta.plot.hist(bins=range(c.XLIM[0], c.XLIM[1]+1, 1),
+                                     alpha=c.HIST_ALPHA,
                                      figsize=c.FIGSIZE,
-                                     xticks=range(c.XLIM[0], c.XLIM[1]+1, 3),
+                                     xticks=range(c.XLIM[0], c.XLIM[1] + 1, 3),
                                      grid=True)
-        # Move from seconds to minutes
-        computed_delta = data.computed_delta / 60.0
-        computed_delta.plot.hist(bins=range(c.XLIM[0], c.XLIM[1]+1, 1),
-                                 figsize=c.FIGSIZE,
-                                 xticks=range(c.XLIM[0], c.XLIM[1] + 1, 3),
-                                 grid=True)
+
+        else:
+            raise ValueError('Plot type not catch earlier. Value provided: {}'.format(plot_type))
 
     plt.legend(dates_formatted, loc='best')
     # Indicates the PU time window
