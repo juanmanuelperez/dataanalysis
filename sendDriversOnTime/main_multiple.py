@@ -10,10 +10,9 @@ import pprint as pp
 
 
 def fetch_data(job_type, city_or_cid, is_city, date, tt):
-    if job_type == c.PU:
-        # Using the Redshift Datawarehouse
-        con_wh = stuart.db.get_readonly_engine_for_stuart_warehouse()
+    con_wh = stuart.db.get_engine_for_stuart_backend()
 
+    if job_type == c.PU:
         # Route the query when it's city or client_id based
         if is_city:
             db_qs = qs.qs_pu_date_city.format(e=city_or_cid, date=date)
@@ -22,9 +21,6 @@ def fetch_data(job_type, city_or_cid, is_city, date, tt):
 
     # DO
     elif job_type == c.DO:
-        # Using the StuartBI
-        con_wh = stuart.db.get_engine_for_stuart_backend()
-
         # Route the query when it's city or client_id based
         if is_city:
             db_qs = qs.qs_do_date_city.format(e=city_or_cid, date=date)
@@ -112,16 +108,18 @@ def main():
             continue
 
         dates_formatted.append('{} {} jobs'.format(dt.datetime.strftime(date, '%Y-%m-%d'), str(len(data))))
+
+        # Move from seconds to minutes
+        computed_delta = data.computed_delta / 60.0
+
         if plot_type == c.KDE:
-            data.computed_delta.plot.kde(bw_method=c.BW_METHOD,
-                                         xlim=c.XLIM,
-                                         figsize=c.FIGSIZE,
-                                         xticks=range(c.XLIM[0], c.XLIM[1]+1, 3),
-                                         grid=True)
+            computed_delta.plot.kde(bw_method=c.BW_METHOD,
+                                    xlim=c.XLIM,
+                                    figsize=c.FIGSIZE,
+                                    xticks=range(c.XLIM[0], c.XLIM[1]+1, 3),
+                                    grid=True)
 
         elif plot_type == c.HIST:
-            # Move from seconds to minutes
-            computed_delta = data.computed_delta / 60.0
             computed_delta.plot.hist(bins=range(c.XLIM[0], c.XLIM[1]+1, 1),
                                      alpha=c.HIST_ALPHA,
                                      figsize=c.FIGSIZE,
