@@ -2,4 +2,4 @@
 
 The cost function formula is: 
 
-![Barcelona 2019-02-15](https://github.com/juanmanuelperez/dataanalysis/blob/master/costFunction/costFunction.jpeg)
+![Cost function (as of 2019-04-15)](https://github.com/juanmanuelperez/dataanalysis/blob/master/costFunction/costFunction.jpeg)

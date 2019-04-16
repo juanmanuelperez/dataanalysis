@@ -1,0 +1,40 @@
+{
+  "jobs": [
+    {
+      "job_id": 7417249,
+      "client_id": 19704,
+      "client_tier": "diamond",
+      "pickup_at": "2019-04-15T14:55:39",
+      "searching_time": 120,
+      "time_to_pu": 60
+    },
+    {
+        "job_id": 1324893,
+        "client_id": 19704,
+        "client_tier": "diamond",
+        "pickup_at": "2019-04-15T17:35:00",
+        "searching_time": 15,
+        "time_to_pu": 80
+    }
+  ],
+  "drivers": [
+    {
+      "location": {
+        "lat": 1.3252,
+        "lng": 45.34525
+      },
+      "driver_id": 12487,
+      "available_at": "",
+      "expired_invitations": []
+    },
+    {
+      "location": {
+        "lat": 1.3411,
+        "lng": 45.98237
+      },
+      "driver_id": 19234,
+      "available_at": "",
+      "expired_invitations": []
+    }
+  ]
+}
