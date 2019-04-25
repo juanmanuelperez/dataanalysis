@@ -12,3 +12,4 @@ BINS = 100
 BINS_CUMULATIVE = 1000
 XLIM = (-15, 45)
 FIGSIZE = (20, 20)
+DATA_DIR_PATH = 'charts/multiple_dist/{}/'

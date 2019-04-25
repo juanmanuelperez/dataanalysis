@@ -1,5 +1,6 @@
 import stuart.db
 import sys
+import os
 import qs
 import pandas as pd
 import constants as c
@@ -74,15 +75,36 @@ def check_plot_type(v):
     return v
 
 
+def create_dir():
+    """
+    Create the directory to store the charts.
+    """
+    dirpath = c.DATA_DIR_PATH.format(dt.datetime.now().strftime('%Y-%m-%dT%H%M%S'))
+    try:
+        os.mkdir(dirpath)
+    except OSError as e:
+        raise ValueError('Impossible to create directory. Erro: {}'.format(e))
+
+    return dirpath
+
 def main():
-    job_type = check_job_type(sys.argv[1]) # do/pu?
+    # Command example
+    # python main_multiple.py pu Barcelona hist bike 2019-04-01 2019-04-05
+    job_type = check_job_type(sys.argv[1])  # do/pu?
     city_or_cid = sys.argv[2]
     plot_type = check_plot_type(sys.argv[3])
     is_city = check_is_city(city_or_cid)
 
     tt = sys.argv[4]
-    if tt not in c.TT:
+    if tt not in c.TT + [c.ALL]:  # Check also it's in ALL but not add it to the normal list
         raise ValueError('Unrecognised TT value ({})'.format(tt))
+
+    # Setup the transport type for it to be in a list to be looped.
+    if tt == c.ALL:
+        tts = c.TT
+
+    else:
+        tts = [tt]
 
     dates = sys.argv[5:]
     if len(dates) < 2:
@@ -90,57 +112,79 @@ def main():
     elif len(dates) == 2:
         start, end = dt.datetime.strptime(dates[0], '%Y-%m-%d'), dt.datetime.strptime(dates[1], '%Y-%m-%d')
 
-        if end < start:
-            raise ValueError('End date strictly before the start date (start: {}, end: {}'.format(start, end))
+        if end <= start:
+            raise ValueError('Invalid end date <= start date (start: {}, end: {}'.format(start, end))
 
         days = (end - start).days
-        dates = [start] # init the dates list
+        dates = [start]  # init the dates list
 
         for i in range(days):
             dates.append(dates[-1] + dt.timedelta(days=1))
 
-    dates_formatted = []
-    for date in dates:
+    # Use to create the folder to store the charts
+    dirpath = create_dir()
 
-        data = fetch_data(job_type, city_or_cid, is_city, date, tt)
-        if len(data) < 2:
-            print('date {} with TT {} not computable (length < 2)'.format(date, tt))
-            continue
+    # Looping through each transport type
+    for tt in tts:
+        print('\n[Processing TT {}]'.format(tt))
 
-        dates_formatted.append('{} {} jobs'.format(dt.datetime.strftime(date, '%Y-%m-%d'), str(len(data))))
+        # Used to decided whether to plot the figures. Requires at least one date with data.
+        savefig = []
 
-        # Move from seconds to minutes
-        computed_delta = data.computed_delta / 60.0
+        dates_formatted = []
+        for date in dates:
+            print('\tProcessing date {}'.format(date))
 
-        if plot_type == c.KDE:
-            computed_delta.plot.kde(bw_method=c.BW_METHOD,
-                                    xlim=c.XLIM,
-                                    figsize=c.FIGSIZE,
-                                    xticks=range(c.XLIM[0], c.XLIM[1]+1, 3),
-                                    grid=True)
+            data = fetch_data(job_type, city_or_cid, is_city, date, tt)
+            if len(data) < 2:
+                print('\t...data not computable (length < 2)')
 
-        elif plot_type == c.HIST:
-            computed_delta.plot.hist(bins=range(c.XLIM[0], c.XLIM[1]+1, 1),
-                                     alpha=c.HIST_ALPHA,
-                                     figsize=c.FIGSIZE,
-                                     xticks=range(c.XLIM[0], c.XLIM[1] + 1, 3),
-                                     grid=True)
+                # No nada available for this date.
+                savefig.append(False)
+                continue
 
+            # Data is available for this date.
+            savefig.append(True)
+
+            dates_formatted.append('{} {} jobs'.format(dt.datetime.strftime(date, '%Y-%m-%d'), str(len(data))))
+
+            # Move from seconds to minutes
+            computed_delta = data.computed_delta / 60.0
+
+            if plot_type == c.KDE:
+                computed_delta.plot.kde(bw_method=c.BW_METHOD,
+                                        xlim=c.XLIM,
+                                        figsize=c.FIGSIZE,
+                                        xticks=range(c.XLIM[0], c.XLIM[1]+1, 3),
+                                        grid=True)
+
+            elif plot_type == c.HIST:
+                computed_delta.plot.hist(bins=range(c.XLIM[0], c.XLIM[1]+1, 1),
+                                         alpha=c.HIST_ALPHA,
+                                         figsize=c.FIGSIZE,
+                                         xticks=range(c.XLIM[0], c.XLIM[1] + 1, 3),
+                                         grid=True)
+
+            else:
+                raise ValueError('Plot type not catch earlier. Value provided: {}'.format(plot_type))
+
+        if any(savefig):
+            plt.legend(dates_formatted, loc='best')
+            # Indicates the PU time window
+            plt.axvline(x=0)
+            plt.axvline(x=c.TIME_WINDOW_JOB_TYPE[job_type])
+            plt.savefig(dirpath + '{plot_type}_{job_type}_{city_or_cid}_{tt}_{bw_method}.png'.format(
+                plot_type=plot_type,
+                job_type=job_type,
+                city_or_cid=city_or_cid,
+                tt=tt,
+                bw_method=c.BW_METHOD),
+                        bbox_inches='tight',
+                        orientation='portrait')
+            plt.clf()
+            print('[Figure saved for current date]')
         else:
-            raise ValueError('Plot type not catch earlier. Value provided: {}'.format(plot_type))
-
-    plt.legend(dates_formatted, loc='best')
-    # Indicates the PU time window
-    plt.axvline(x=0)
-    plt.axvline(x=c.TIME_WINDOW_JOB_TYPE[job_type])
-    plt.savefig('charts/multiple_dist/{ts}_dist_{job_type}_{city_or_cid}_{tt}_{bw_method}.png'.format(
-        ts=dt.datetime.now().strftime('%Y-%m-%dT%H%M%S'),
-        job_type=job_type,
-        city_or_cid=city_or_cid,
-        tt=tt,
-        bw_method=c.BW_METHOD),
-                bbox_inches='tight',
-                orientation='portrait')
+            print('[Figure not saved for current date (no {} in {})]'.format(tt, city_or_cid))
 
 
 if __name__ == '__main__':
@@ -148,4 +192,4 @@ if __name__ == '__main__':
     Compare KDE between TT and multiple dates.
     """
     main()
-    # 17h40
+    #  17h40
