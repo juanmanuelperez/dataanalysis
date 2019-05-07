@@ -1,6 +1,11 @@
 .DS_Store
 sendDriversOnTime/Analysis/*
 
+.idea/
+NDOD/
+autoStacking/
+monoprix/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

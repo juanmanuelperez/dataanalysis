@@ -22,14 +22,16 @@ Make sure to always provide the city and then the date. The plot obtained is:
 ### `main_multiple`
 
 ```bash
-python main_multiple.py Liverpool bike 2019-03-01 2019-02-22 2019-02-15
+python main_multiple.py do Liverpool bike 2019-03-01 2019-02-22 2019-02-15
 ```
 
 It is only possible to run it for:
 
-- one single city, e.g. `Barcelona`
-- one transport type, e.g. `bike`
-- as many dates as desired, e.g. `2019-03-01 2019-02-22 2019-02-15`
+- (required) the job type for which the analysis as to be made, e.g. `do`. The other accepted value is `pu`
+- (required) one single city or client, e.g. `Barcelona` or `104006`
+- (required) define the plot type, e.g. `kde` or `hist`
+- (required) one transport type, e.g. `bike`
+- (required) as many dates as desired, e.g. `2019-03-01 2019-02-22 2019-02-15`. If only two dates are given, then the system considers it a range and plots the distribution for every date.
 
 The order in which the parameters is very important (city - TT - dates). The plot obtained is:
 

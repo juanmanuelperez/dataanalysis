@@ -37,7 +37,7 @@ def compute_kde(df, date, city):
     xticks = range(c.XLIM[0], c.XLIM[1]+1, 3)
 
     df = clean_df(df)
-    g = df.groupby('tt').almost_picking_at_vs_pickup_at
+    g = df.groupby('tt').almost_picking_at
     n = g.ngroups
     nrows = n // 2
     if n % 2: # n is odd
@@ -89,8 +89,9 @@ def main():
     date = sys.argv[2]
     print('Analysing for {} on {}'.format(city, date))
 
-    con_wh = stuart.db.get_readonly_engine_for_stuart_warehouse()
-    db_qs = qs.qs_city_date.format(city=city, date=date)
+    # con_wh = stuart.db.get_readonly_engine_for_stuart_warehouse()
+    con_wh = stuart.db.get_engine_for_stuart_backend()
+    db_qs = qs.qs_pu_date_city.format(date=date, e=city)
 
     rides = pd.read_sql(db_qs, con_wh)
     rides.to_csv('./test.csv')
