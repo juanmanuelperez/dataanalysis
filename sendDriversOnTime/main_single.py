@@ -5,6 +5,7 @@ import constants as c
 import pandas as pd
 import pprint as pp
 import matplotlib.pyplot as plt
+import datetime as dt
 
 def clean_df(df):
     """A df with <2 job deliveries is invalid."""
@@ -37,7 +38,11 @@ def compute_kde(df, date, city):
     xticks = range(c.XLIM[0], c.XLIM[1]+1, 3)
 
     df = clean_df(df)
-    g = df.groupby('tt').almost_picking_at
+    # Move from seconds to minutes
+    df.computed_delta /= 60.0
+    
+    g = df.groupby('tt').computed_delta
+    
     n = g.ngroups
     nrows = n // 2
     if n % 2: # n is odd
@@ -69,9 +74,14 @@ def compute_kde(df, date, city):
                         xticks=xticks,
                         grid=True)
     fig.tight_layout()
-    plt.savefig('charts/single/{date}_{city}_{bw_method}.png'.format(date=date, city=city, bw_method=c.BW_METHOD),
-                bbox_inches='tight',
-                orientation='portrait')
+    current_date = format(dt.datetime.now().strftime('%Y-%m-%dT%H%M%S'))
+    plt.savefig('charts/single/{current_date}_{date}_{city}_{bw_method}.png'.format(
+        current_date=current_date,
+        date=date,
+        city=city,
+        bw_method=c.BW_METHOD),
+        bbox_inches='tight',
+        orientation='portrait')
 
 def print_distribution(df, city=None, date=None, tt=None):
     n = len(df)
