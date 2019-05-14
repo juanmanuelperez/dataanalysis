@@ -15,7 +15,7 @@ select
 	job.client_id as client_id,
 	job.status as job_status,
 	zones.code as city,
-	delivery_status.created_at as almost_picking_at,
+	delivery_status.created_at as waiting_at_pickup_at,
 	job.pickup_at as pickup_at,
 	timestampdiff(second, job.pickup_at, delivery_status.created_at) as computed_delta
 
@@ -27,7 +27,7 @@ left join zones on job.zone_id=zones.id
 where
     date(job.start_inviting_at)='{date}'
     and zones.code='{e}'
-    and delivery_status.status='almost_picking'
+    and delivery_status.status='waiting_at_pickup'
     and job.status='finished'
     and job.pickup_at is not null
 """

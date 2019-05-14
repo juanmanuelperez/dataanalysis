@@ -57,6 +57,7 @@ def compute_kde(df, date, city):
         # group.plot.hist(ax=a2, bins=c.BINS, alpha=.3, xlim=c.XLIM, grid=True, figsize=c.FIGSIZE, xticks=xticks)
         plt.axvline(x=-5, color='black', alpha=0.5)
         plt.axvline(x=-3, color='black', alpha=0.5)
+        plt.axvline(x=round(group.mean(),1), color='red', alpha=0.5)
         plt.axvline(x=0)
         plt.axvline(x=15)
         group.plot.kde(bw_method=c.BW_METHOD,
@@ -75,7 +76,7 @@ def compute_kde(df, date, city):
                         grid=True)
     fig.tight_layout()
     current_date = format(dt.datetime.now().strftime('%Y-%m-%dT%H%M%S'))
-    plt.savefig('charts/single/{current_date}_{date}_{city}_{bw_method}.png'.format(
+    plt.savefig('charts/single_waiting_at_pu_at/{current_date}_{date}_{city}_{bw_method}.png'.format(
         current_date=current_date,
         date=date,
         city=city,
@@ -107,8 +108,6 @@ def main():
     rides.to_csv('./test.csv')
 
     compute_kde(rides, date, city)
-
-    #TODO: remove jobs with manual interactions (no pickup_at).
 
 
 if __name__ == '__main__':
