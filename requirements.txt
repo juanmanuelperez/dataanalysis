@@ -30,7 +30,7 @@ PyYAML==3.13
 redis==3.1.0
 requests==2.21.0
 requests-cache==0.4.13
-rsa==4.0
+rsa==4.7
 s3fs==0.2.0
 s3transfer==0.2.0
 scipy==1.2.1
